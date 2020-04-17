@@ -906,6 +906,34 @@ def stlToFoamBoundaryMesh(stlFileName,scaleFactor=1.0):
     fFaces.write(')\n')
     fFaces.close()
 
+    ################ write face normal
+    fFaces = open('constant/polyMesh/normals','w')
+    # write the file header
+    fFaces.write('/*--------------------------------*- C++ -*----------------------------------*\ \n')
+    fFaces.write('| =========                 |                                                 |\n')
+    fFaces.write('| \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |\n')
+    fFaces.write('|  \\\\    /   O peration     | Version:  v1812                                 |\n')
+    fFaces.write('|   \\\\  /    A nd           | Web:      www.OpenFOAM.org                      |\n')
+    fFaces.write('|    \\\\/     M anipulation  |                                                 |\n')
+    fFaces.write('\*---------------------------------------------------------------------------*/\n')
+    fFaces.write('FoamFile\n')
+    fFaces.write('{\n')
+    fFaces.write('    version     2.0;\n')
+    fFaces.write('    format      ascii;\n')
+    fFaces.write('    class       faceList;\n')
+    fFaces.write('    location    "constant/polyMesh";\n')
+    fFaces.write('    object      normals;\n')
+    fFaces.write('}\n')
+    fFaces.write('// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //\n')
+    fFaces.write('\n')
+    
+    fFaces.write('%d\n'%len(fNormalX))
+    fFaces.write('(\n')
+    for i in range(len(fNormalX)):
+        fFaces.write('%g %g %g\n'%(float(fNormalX[i]),float(fNormalY[i]),float(fNormalZ[i])))
+    fFaces.write(')\n')
+    fFaces.close()
+
     ################ write owner
     # note we don't actually need owner information for the surface mesh, so we simply assign zeros here
     fOwner = open('constant/polyMesh/owner','w')
