@@ -6,8 +6,6 @@ The OpenFoam Mesh module is used for interacting with an
 OpenFoam Mesh mesh - typically used in a 3D CFD program.
 
 """
-from __future__ import print_function
-from __future__ import division
 # =============================================================================
 # Imports
 # =============================================================================
@@ -1137,11 +1135,11 @@ def fixFaceIndexFormat(fileNames):
         fIn = open(facesOrig, 'r')
 
     lines = fIn.readlines()
-    linesAll = ''.join(lines)
+    linesAll = b''.join(lines)
     fIn.close()
     
     # search the face file and get the data block
-    faceDataBlock = re.search(r'\s*[0-9]{1,100}\s*\n*\((.*)\)\s*\n*',linesAll,re.DOTALL)
+    faceDataBlock = re.search(r'\s*[0-9]{1,100}\s*\n*\((.*)\)\s*\n*',linesAll.decode(),re.DOTALL)
     faceDataBlockList=faceDataBlock.group(1).split()
     faceDataBlockSplitLines = faceDataBlock.group(1).splitlines()
 
@@ -1190,7 +1188,7 @@ def fixFaceIndexFormat(fileNames):
         for line in lines:
         
             # check if we can start writing the new data
-            res = nFaceLine.match(line)
+            res = nFaceLine.match(line.decode())
             if res and dataStart ==0:
                 dataStart =1
                 fOut.write(line)
@@ -1244,7 +1242,7 @@ def readVolumeMeshPoints(fileNames):
         for line in f:
             if j>=N:
                 break
-            res = pointLine.match(line)
+            res = pointLine.match(line.decode())
             if res:
                 k += 1
                 for idim in range(3):
@@ -1287,8 +1285,8 @@ def readFaceInfo(fileNames):
         counter = 0
         #for j in range(N):                
         for line in f:
-            line = line.replace('(', ' ')
-            line = line.replace(')', ' ')
+            line = line.replace(b'(', b' ')
+            line = line.replace(b')', b' ')
             aux = line.split()
             nNode = int(aux[0])
             for k in range(1, nNode+1):
@@ -1318,7 +1316,11 @@ def readBoundaryInfo(fileNames,faceData):
     boundaries = {}
     keyword = re.compile(r'\s*([a-zA-Z0-9]{1,100})\s*\n')
     for line in f:
-        res = keyword.match(line)
+        try:
+            lineD=line.decode()
+        except:
+            lineD=line
+        res = keyword.match(lineD)
         if res:
             boundaryName = line[res.start(1):res.end(1)]
             blkData = _readBlock(f)
@@ -1362,7 +1364,11 @@ def readCellInfo(fileNames):
     else:    
         counter = 0
         for line in f:
-            if ')' in line:
+            try:
+                lineD=line.decode()
+            except:
+                lineD=line
+            if ')' in lineD:
                 break
             vals =  np.fromstring(line, dtype='int',sep=" ")
             #print vals
@@ -1395,7 +1401,11 @@ def readCellInfo(fileNames):
     else:
         counter = 0
         for line in f:
-            if ')' in line:
+            try:
+                lineD=line.decode()
+            except:
+                lineD=line
+            if ')' in lineD:
                 break
             vals =  np.fromstring(line, dtype='int',sep=" ")
             #print vals
@@ -1431,7 +1441,11 @@ def _parseFoamHeader(f, nDim=1):
     foamDict = {}
 
     for line in f:
-        res = keyword.match(line)
+        try:
+            lineD=line.decode()
+        except:
+            lineD=line
+        res = keyword.match(lineD)
         if res:
             headerName = line[res.start():res.end()]
             foamDict[headerName] = _readBlock(f,nDim)
@@ -1453,14 +1467,19 @@ def _parseFoamHeader(f, nDim=1):
     exitOnNext = False
 
     for line in f:
+        try:
+            lineD=line.decode()
+        except:
+            lineD=line
+
         if exitOnNext:
             return foamDict,  N, oneLineData
-        res = numberHeader.match(line)
-        resOneLine = numberHeaderOneLine.search(line)
-        dataTest = data.match(line)
-        fieldTest = nufield.match(line)
-        uFieldTest = ufield.match(line)
-        uFieldTest3 = ufield3.match(line)
+        res = numberHeader.match(lineD)
+        resOneLine = numberHeaderOneLine.search(lineD)
+        dataTest = data.match(lineD)
+        fieldTest = nufield.match(lineD)
+        uFieldTest = ufield.match(lineD)
+        uFieldTest3 = ufield3.match(lineD)
 
         if uFieldTest:
             foamDict[uFieldTest.group(1)]=uFieldTest.group(2)+' '+uFieldTest.group(3)
@@ -1502,20 +1521,25 @@ def _readBlock(f, nDim=1):
     blockOpen = False
     blk = {}
     for line in f:
+        try:
+            lineD=line.decode()
+        except:
+            lineD=line
+
         if not blockOpen:
-            res = openBracket.match(line)
+            res = openBracket.match(lineD)
             if res:
                 blockOpen = True
 
         else:
-            res = data.match(line)
+            res = data.match(lineD)
             if res:
                 if 'nonuniform' in res.group(2):
                     field = _readField(f,nDim)
                 else:
                     field = res.group(2)
                 blk[res.group(1)] = field
-            if closeBracket.match(line):
+            if closeBracket.match(lineD):
                 break
 
     return blk
@@ -1540,31 +1564,31 @@ def _readField(f, nDim):
     for line in f:
         if not sizeFound:
             # figure out the size of this field block
-            sizeTest = numberHeader.search(line)
+            sizeTest = numberHeader.search(line.decode())
 
             if sizeTest:
                 field['size'] = int(sizeTest.group(1))
                 sizeFound=True
                 # now also check for a block open in this line
-                openTest = openBracket.search(line)
+                openTest = openBracket.search(line.decode())
                 if openTest:
                     blockOpen=True
                     field['value']=[]
                     # now if size is 0 also check for close bracket
                     if field['size']==0:
-                        closeTest = closeBracket.search(line)
+                        closeTest = closeBracket.search(line.decode())
                         if closeTest:
                             blockOpen=False
                             return field
 
         elif not blockOpen:
-            openTest = openBracket.match(line)
+            openTest = openBracket.match(line.decode())
             if openTest:
                 blockOpen=True
                 field['value']=[]
 
         else:
-            closeTest = closeBracket.search(line)
+            closeTest = closeBracket.search(line.decode())
             if closeTest:
                 blockOpen=False
                 return field
@@ -1578,7 +1602,7 @@ def _readField(f, nDim):
                 else:
                     raise Error("nDim >3 not yet supported.")
 
-                res = varLine.match(line)
+                res = varLine.match(line.decode())
                 if res:
                     field['value'].append(res.group(1))
 
@@ -1644,7 +1668,7 @@ def readFoamVarFile(fileNames, varName, timeDir,nCells, nDim):
             line = f.readline()
 
             # Now parse the data
-            dataLine = dataPack.search(line)
+            dataLine = dataPack.search(line.decode())
 
             data = line[dataLine.start(0)+1:dataLine.end(0)-2]
 
@@ -1688,7 +1712,7 @@ def readFoamVarFile(fileNames, varName, timeDir,nCells, nDim):
             #for j in range(N):
             j = 0
             for line in f:
-                res = varLine.match(line)
+                res = varLine.match(line.decode())
 
                 if res:
                     k += 1
@@ -1706,7 +1730,7 @@ def readFoamVarFile(fileNames, varName, timeDir,nCells, nDim):
 
     for line in f:
 
-        res = keyword.match(line)
+        res = keyword.match(line.decode())
         if res:
             boundaryName = line[res.start(1):res.end(1)]
             var['boundaryName']=boundaryName
@@ -1733,13 +1757,13 @@ def _readBoundaryBlock(f,nDim=0):
     blk = OrderedDict()#{}
     for line in f:
         if not blockOpen:
-            res = openBracket.match(line)
+            res = openBracket.match(line.decode())
             if res:
                 blockOpen = True
         else:
-            keywd = keyword.match(line)
-            res = data.match(line)
-           # resNSC = dataNSC.match(line)
+            keywd = keyword.match(line.decode())
+            res = data.match(line.decode())
+           # resNSC = dataNSC.match(line.decode())
 
             if keywd:
                 # this is the start of another block, call recursively
@@ -1765,7 +1789,7 @@ def _readBoundaryBlock(f,nDim=0):
                 #blk[resNSC.group(1)] = field#res.group(2)
 
 
-            if closeBracket.match(line):
+            if closeBracket.match(line.decode()):
                 break
 
     return blk
@@ -1785,29 +1809,29 @@ def _writeOpenFOAMVolumePoints(fileNames,nodes):
         f = open(fileName, 'w')
 
     # write the file header
-    f.write('/*--------------------------------*- C++ -*----------------------------------*\ \n')
-    f.write('| =========                 |                                                 |\n')
-    f.write('| \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |\n')
-    f.write('|  \\\\    /   O peration     | Version:  v1812                                 |\n')
-    f.write('|   \\\\  /    A nd           | Web:      www.OpenFOAM.org                      |\n')
-    f.write('|    \\\\/     M anipulation  |                                                 |\n')
-    f.write('\*---------------------------------------------------------------------------*/\n')
-    f.write('FoamFile\n')
-    f.write('{\n')
-    f.write('    version     2.0;\n')
-    f.write('    format      ascii;\n')
-    f.write('    class       vectorField;\n')
-    f.write('    location    "constant/polyMesh";\n')
-    f.write('    object      points;\n')
-    f.write('}\n')
-    f.write('// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //\n')
-    f.write('\n')
-    f.write('\n')
+    f.write(b'/*--------------------------------*- C++ -*----------------------------------*\ \n')
+    f.write(b'| =========                 |                                                 |\n')
+    f.write(b'| \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |\n')
+    f.write(b'|  \\\\    /   O peration     | Version:  v1812                                 |\n')
+    f.write(b'|   \\\\  /    A nd           | Web:      www.OpenFOAM.org                      |\n')
+    f.write(b'|    \\\\/     M anipulation  |                                                 |\n')
+    f.write(b'\*---------------------------------------------------------------------------*/\n')
+    f.write(b'FoamFile\n')
+    f.write(b'{\n')
+    f.write(b'    version     2.0;\n')
+    f.write(b'    format      ascii;\n')
+    f.write(b'    class       vectorField;\n')
+    f.write(b'    location    "constant/polyMesh";\n')
+    f.write(b'    object      points;\n')
+    f.write(b'}\n')
+    f.write(b'// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //\n')
+    f.write(b'\n')
+    f.write(b'\n')
 
     nodes = nodes.reshape((int(len(nodes)/3), 3))
     nPoints = len(nodes)
-    f.write('%d\n'% nPoints)
-    f.write('(\n')
+    f.write(b'%d\n'% nPoints)
+    f.write(b'(\n')
     for i in range(nPoints):
         if abs(nodes[i, 0])<1e-16:
             nodes[i, 0]=0.0
@@ -1815,9 +1839,9 @@ def _writeOpenFOAMVolumePoints(fileNames,nodes):
             nodes[i, 1]=0.0
         if abs(nodes[i, 2])<1e-16:
             nodes[i, 2]=0.0
-        f.write('(%20.15e %20.15e %20.15e)\n'%(nodes[i, 0], nodes[i, 1], nodes[i, 2]))
-    f.write(')\n\n\n')
-    f.write('// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //\n')
+        f.write(b'(%20.15e %20.15e %20.15e)\n'%(nodes[i, 0], nodes[i, 1], nodes[i, 2]))
+    f.write(b')\n\n\n')
+    f.write(b'// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //\n')
 
     return
     
