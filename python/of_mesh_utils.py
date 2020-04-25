@@ -1135,11 +1135,15 @@ def fixFaceIndexFormat(fileNames):
         fIn = open(facesOrig, 'r')
 
     lines = fIn.readlines()
-    linesAll = b''.join(lines)
+    try:
+        linesAll = b''.join(lines)
+        linesAll = linesAll.decode()
+    except:
+        linesAll = ''.join(lines)
     fIn.close()
     
     # search the face file and get the data block
-    faceDataBlock = re.search(r'\s*[0-9]{1,100}\s*\n*\((.*)\)\s*\n*',linesAll.decode(),re.DOTALL)
+    faceDataBlock = re.search(r'\s*[0-9]{1,100}\s*\n*\((.*)\)\s*\n*',linesAll,re.DOTALL)
     faceDataBlockList=faceDataBlock.group(1).split()
     faceDataBlockSplitLines = faceDataBlock.group(1).splitlines()
 
@@ -1242,7 +1246,11 @@ def readVolumeMeshPoints(fileNames):
         for line in f:
             if j>=N:
                 break
-            res = pointLine.match(line.decode())
+            try:
+                lineD=line.decode()
+            except:
+                lineD=line
+            res = pointLine.match(lineD)
             if res:
                 k += 1
                 for idim in range(3):
@@ -1285,8 +1293,12 @@ def readFaceInfo(fileNames):
         counter = 0
         #for j in range(N):                
         for line in f:
-            line = line.replace(b'(', b' ')
-            line = line.replace(b')', b' ')
+            try:
+                line = line.replace(b'(', b' ')
+                line = line.replace(b')', b' ')
+            except:
+                line = line.replace('(', ' ')
+                line = line.replace(')', ' ')
             aux = line.split()
             nNode = int(aux[0])
             for k in range(1, nNode+1):
