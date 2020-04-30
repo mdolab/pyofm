@@ -10,7 +10,7 @@
  'errTol': 0.0005,
  'evalMode': 'fast',
  'fileType': 'openfoam',
- 'gridFile': '/home/gaetan/hg/pywarpustruct/python/input_files/ahmedBodyMesh',
+ 'gridFile': './input/ahmedBodyMesh',
  'restartFile': None,
  'specifiedSurfaces': None,
  'symmTol': 1e-06,

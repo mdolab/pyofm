@@ -28,8 +28,10 @@ install:
   - docker exec -it regtest /bin/bash -c "cd $DOCKER_WORKING_DIR/python/reg_tests && rm -rf input.tar.gz && wget https://github.com/mdolab/pyofm/raw/master/python/reg_tests/input.tar.gz && tar -xzf input.tar.gz"
 
 script:
-  # Run tests
+  # Run real tests
   - docker exec -it regtest /bin/bash -c ". /home/dafoamuser/setupDAFoam.sh && cd $DOCKER_WORKING_DIR/python/reg_tests && python run_reg_tests.py"
+  # Run complex tests
+  - docker exec -it regtest /bin/bash -c "sed -i -e 's/real-opt/complex-opt/g' /home/dafoamuser/setupDAFoam.sh && . /home/dafoamuser/setupDAFoam.sh && rm -rf /home/dafoamuser/packages/petsc-3.11.0/real-opt && cd /home/dafoamuser/repos/idwarp && make -f Makefile_CS && cd $DOCKER_WORKING_DIR/python/reg_tests && python run_reg_tests_cs.py"
 
 after_script:
   - docker rm -f regtest
