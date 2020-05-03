@@ -33,6 +33,8 @@ void OFMesh::readMesh()
     #include "setArgs.H"
     #include "setRootCasePython.H"
 
+    Info<<"Reading the OpenFOAM mesh.."<<endl;
+
     runTimePtr_.reset
     (
         new Time

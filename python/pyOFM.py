@@ -10,6 +10,7 @@ OpenFoam Mesh mesh - typically used in a 3D CFD program.
 # Imports
 # =============================================================================
 import os
+import shutil
 import numpy as np
 from mpi4py import MPI
 from .pyOFMesh import pyOFMesh
@@ -58,13 +59,14 @@ class PYOFM(object):
     def __init__(self, comm=None):
 
         if comm==None:
-            comm = MPI.COMM_WORLD
+            self.comm = MPI.COMM_WORLD
+        else:
+            self.comm = comm
         
         self.parRun=False
         parArg = ''
-        if comm.size > 1:
+        if self.comm.size > 1:
             parArg = ' -parallel'
-            self.parRun=True
     
         solverName='pyOFMesh -python'+parArg
 
@@ -79,6 +81,10 @@ class PYOFM(object):
         self.nLocalInternalFaces = self.ofMesh.getNLocalInternalFaces()
 
         self.nLocalBoundaryPatches = self.ofMesh.getNLocalBoundaryPatches()
+
+        dirName = os.getcwd()
+
+        self.fileNames = self.getFileNames(dirName,self.comm)
     
     def getFileNames(self, caseDir, comm=None):
         """
@@ -93,26 +99,28 @@ class PYOFM(object):
             A logical describing whether or not this case is parallel
         """
         fileNames = {}
-        if comm is None:
-            comm = MPI.COMM_WORLD
-    
+
         self.checkMeshCompression()
     
         postfix=''
         if self.writeCompression():
             postfix='.gz'
         
-        if comm.size > 1:
-            fileNames['refPointsFile'] = os.path.join(caseDir, 'processor%d/constant/polyMesh/points_orig%s'%(comm.rank,postfix))
-            fileNames['pointsFile'] = os.path.join(caseDir, 'processor%d/constant/polyMesh/points%s'%(comm.rank,postfix))
-            fileNames['boundaryFile'] = os.path.join(caseDir, 'processor%d/constant/polyMesh/boundary'%comm.rank)
-            fileNames['faceFile'] = os.path.join(caseDir, 'processor%d/constant/polyMesh/faces%s'%(comm.rank,postfix))
-            fileNames['ownerFile'] = os.path.join(caseDir, 'processor%d/constant/polyMesh/owner%s'%(comm.rank,postfix))
-            fileNames['neighbourFile'] = os.path.join(caseDir, 'processor%d/constant/polyMesh/neighbour%s'%(comm.rank,postfix))
-            fileNames['varBaseDir'] = os.path.join(caseDir,'processor%d'%comm.rank)
+        if self.comm.size > 1:
+            fileNames['refPointsFile'] = os.path.join(caseDir, 'processor%d/constant/polyMesh/points_orig%s'%(self.comm.rank,postfix))
+            fileNames['pointsFile'] = os.path.join(caseDir, 'processor%d/constant/polyMesh/points%s'%(self.comm.rank,postfix))
+            fileNames['pointsFile0'] = os.path.join(caseDir, 'processor%d/0/polyMesh/points%s'%(self.comm.rank,postfix))
+            fileNames['pointsFile0Dir'] = os.path.join(caseDir, 'processor%d/0/polyMesh'%(self.comm.rank))
+            fileNames['boundaryFile'] = os.path.join(caseDir, 'processor%d/constant/polyMesh/boundary'%self.comm.rank)
+            fileNames['faceFile'] = os.path.join(caseDir, 'processor%d/constant/polyMesh/faces%s'%(self.comm.rank,postfix))
+            fileNames['ownerFile'] = os.path.join(caseDir, 'processor%d/constant/polyMesh/owner%s'%(self.comm.rank,postfix))
+            fileNames['neighbourFile'] = os.path.join(caseDir, 'processor%d/constant/polyMesh/neighbour%s'%(self.comm.rank,postfix))
+            fileNames['varBaseDir'] = os.path.join(caseDir,'processor%d'%self.comm.rank)
         else:
             fileNames['refPointsFile'] = os.path.join(caseDir, 'constant/polyMesh/points_orig%s'%postfix)
             fileNames['pointsFile'] = os.path.join(caseDir, 'constant/polyMesh/points%s'%postfix)
+            fileNames['pointsFile0'] = os.path.join(caseDir, '0/polyMesh/points%s'%postfix)
+            fileNames['pointsFile0Dir'] = os.path.join(caseDir, '0/polyMesh/')
             fileNames['boundaryFile'] = os.path.join(caseDir, 'constant/polyMesh/boundary')
             fileNames['faceFile'] = os.path.join(caseDir, 'constant/polyMesh/faces%s'%postfix)
             fileNames['ownerFile'] = os.path.join(caseDir, 'constant/polyMesh/owner%s'%postfix)
@@ -173,8 +181,11 @@ class PYOFM(object):
 
         for patchI in range(self.nLocalBoundaryPatches):
             patchName = self.ofMesh.getLocalBoundaryName(patchI)
+            patchName = patchName.decode()
+
             boundaries[patchName] = {}
             pathType = self.ofMesh.getLocalBoundaryType(patchI)
+            pathType = pathType.decode()
             boundaries[patchName]['type']=pathType
 
             startFace = self.ofMesh.getLocalBoundaryStartFace(patchI)
@@ -228,24 +239,41 @@ class PYOFM(object):
         folder, instead of constant/polyMesh/points
         """
 
+        points = points.reshape((int(len(points)/3), 3))
+
         for pointI, _ in enumerate(points):
             for compI in range(3):
-                value = points[pointI,compI]
+                value = points[pointI][compI]
                 self.ofMesh.setMeshPointCoord(pointI, compI, value)
         
         self.ofMesh.updateMesh()
         self.ofMesh.writeMesh()
 
+        # NOTE: the above writeMesh() call will write mesh to 0/polyMesh/points
+        # we need to mv the points to constant/polyMesh/points
+        fileOrig = self.fileNames['pointsFile0']
+        fileNew = self.fileNames['pointsFile']
+        fileOrigDir = self.fileNames['pointsFile0Dir']
+        try:
+            shutil.move(fileOrig, fileNew)
+        except:
+            raise Error('Can not move %s to %s'%(fileOrig, fileNew))
+        
+        try:
+            shutil.rmtree(fileOrigDir) 
+        except:
+            raise Error('Can not remove %s'%(fileOrigDir))
+
+        self.comm.Barrier()
+
     
     def checkMeshCompression(self):
-
-        comm = MPI.COMM_WORLD
     
         # check if mesh files are properly compressed. This can happen if writecompress is on, but the mesh files
         # have not been compressed. In this case, we will manually compress all the mesh files (except for boundary),
         # and delete the uncompressed ones.
         if self.writeCompression():
-            if comm.rank==0:
+            if self.comm.rank==0:
                 print("Checking if we need to compress the mesh files")
                 meshFileDir='constant/polyMesh'
                 for file1 in os.listdir(meshFileDir):
@@ -255,8 +283,7 @@ class PYOFM(object):
                             with open(compFileName, 'rb') as f_in, gzip.open(compFileName+'.gz', 'wb') as f_out:
                                 shutil.copyfileobj(f_in,f_out)
                             os.remove(compFileName)
-        comm.Barrier()
-
+        self.comm.Barrier()
 
     def writeCompression(self):
         # check whether to use compressed file names 

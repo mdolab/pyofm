@@ -36,17 +36,19 @@ ext = [Extension("pyOFMesh",
         # These are common for all OpenFOAM executives
         os.getenv("FOAM_SRC")+"/OpenFOAM/lnInclude",
         os.getenv("FOAM_SRC")+"/OSspecific/POSIX/lnInclude",
-        os.getenv("FOAM_LIBBIN")],
+        os.getenv("FOAM_LIBBIN"),
+        os.getenv("FOAM_USER_LIBBIN")],
     # These are from Make/options:EXE_LIBS
     libraries = [
         "meshTools",
         "finiteVolume"],
     # These are pathes of linked libraries 
     library_dirs=[
-        os.getenv("FOAM_LIBBIN")],
+        os.getenv("FOAM_LIBBIN"),
+        os.getenv("FOAM_USER_LIBBIN")],
     # All other flags for OpenFOAM, users don't need to touch this 
     extra_compile_args= [
-        "-DFULLDEBUG -g -O0",
+        #"-DFULLDEBUG -g -O0", # this is for debugging
         "-std=c++11",
         "-m64",
         "-DOPENFOAM_PLUS=1812",
