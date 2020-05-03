@@ -103,11 +103,87 @@ def test1():
     #change back to the original directory
     os.chdir('../../')
 
+def test2():
+    # Test some basic pyOFM functions uing the Ahmed body openfoam mesh
+    sys.stdout.flush()
+    #change directory to the correct test case
+    os.chdir('./input/ahmedBodyMesh/')
+
+    from pyofm import PYOFM
+
+    ofm = PYOFM(MPI.COMM_WORLD)
+
+    # test points
+    points = ofm.readVolumeMeshPoints()
+    val = MPI.COMM_WORLD.reduce(numpy.sum(points.flatten()),op=MPI.SUM)
+    if MPI.COMM_WORLD.rank == 0:
+        print('Sum of points initial:')
+        reg_write(val,1e-8,1e-8)
+
+    # test faces
+    faces = ofm.readFaceInfo()
+    fSum = 0
+    for face in faces:
+        for point in face:
+            fSum += point
+    val = MPI.COMM_WORLD.reduce(fSum,op=MPI.SUM)
+    if MPI.COMM_WORLD.rank == 0:
+        print('Sum of faces:')
+        reg_write(val,1e-8,1e-8)
+    
+    # test boundaries
+    bcSum = 0.0
+    boundaries = ofm.readBoundaryInfo(faces)
+    for key in list(boundaries.keys()):
+        boundary = boundaries[key]
+        nodes = boundary['nodes']
+        faces = boundary['faces']
+        for node in nodes:
+            bcSum += node
+        for face in faces:
+            bcSum += face
+    val = MPI.COMM_WORLD.reduce(bcSum,op=MPI.SUM)
+    if MPI.COMM_WORLD.rank == 0:
+        print('Sum of boundary nodes and faces:')
+        reg_write(val,1e-8,1e-8)
+
+    # test owners and neighbours
+    owners, neighbours = ofm.readCellInfo()
+    onSum = 0.0
+    for owner in owners:
+        onSum += owner
+    for neighbour in neighbours:
+        onSum += neighbour
+    val = MPI.COMM_WORLD.reduce(onSum,op=MPI.SUM)
+    if MPI.COMM_WORLD.rank == 0:
+        print('Sum of owners and neighbours:')
+        reg_write(val,1e-8,1e-8)
+    
+    # test write and read mesh points
+    points1D = points.flatten()
+    points1D *= 10.0 # scale the point
+    ofm.writeVolumeMeshPoints(points1D)
+    pointsNew = ofm.readVolumeMeshPoints()
+    val = MPI.COMM_WORLD.reduce(numpy.sum(pointsNew.flatten()),op=MPI.SUM)
+    if MPI.COMM_WORLD.rank == 0:
+        print('Sum of points new:')
+        reg_write(val,1e-8,1e-8)
+    
+    # reset the points 
+    points1D /= 10.0 # scale the point back
+    ofm.writeVolumeMeshPoints(points1D)
+
+    #change back to the original directory
+    os.chdir('../../')
+
 if __name__ == '__main__':
     if len(sys.argv) == 1:
         # Run all tests
         test1()
+        test2()
     else:
         # Run individual ones
         if 'test1' in sys.argv:
             test1()
+        if 'test2' in sys.argv:
+            test2()
