@@ -28,6 +28,10 @@ diff_cmd = args.diff_cmd
 nodiff = args.nodiff
 mpiexec= args.mpiexec
 
+if os.getenv("WM_PROJECT") is None:
+    print("OpenFOAM environment not found, forgot to source the OpenFOAM bashrc?")
+    exit(1)
+
 if mode == 'train':
     try:
         os.remove('%s_reg.ref'%(module_name))

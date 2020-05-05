@@ -1,1 +1,1 @@
-from .python import pyOFM
+from .python.pyOFM import PYOFM
