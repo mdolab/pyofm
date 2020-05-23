@@ -42,6 +42,8 @@ private:
 
     label nLocalPoints_;
 
+    label nLocalCells_;
+
     label nLocalFaces_;
 
     label nLocalInternalFaces_;
@@ -97,6 +99,11 @@ public:
     label getNLocalPoints() const
     {
         return nLocalPoints_;
+    }
+
+    label getNLocalCells() const
+    {
+        return nLocalCells_;
     }
 
     label getNLocalFaces() const

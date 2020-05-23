@@ -26,6 +26,7 @@ cdef extern from "OFMesh.H" namespace "Foam":
         double getMeshPointCoord(int,int)
         void setMeshPointCoord(int,int,double)
         int getNLocalPoints()
+        int getNLocalCells()
         int getNLocalFaces()
         int getNLocalInternalFaces()
         int getNFacePoints(int)
@@ -87,6 +88,9 @@ cdef class pyOFMesh:
 
     def getNLocalPoints(self):
         return self._thisptr.getNLocalPoints()
+    
+    def getNLocalCells(self):
+        return self._thisptr.getNLocalCells()
     
     def getNLocalFaces(self):
         return self._thisptr.getNLocalFaces()

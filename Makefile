@@ -3,6 +3,5 @@ default:
 	(mv src/*.so python)
 
 clean:
-	(cd python && rm -rf *.so)
 	(cd src && rm -rf *.cpp *.so build)
 	(rm -rf */__pycache__ */*/__pycache__)

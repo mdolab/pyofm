@@ -65,6 +65,8 @@ void OFMesh::readMesh()
 
     nLocalPoints_=mesh.nPoints();
 
+    nLocalCells_=mesh.nCells();
+
     nLocalFaces_=mesh.nFaces();
 
     nLocalInternalFaces_=mesh.nInternalFaces();
