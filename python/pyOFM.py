@@ -13,6 +13,7 @@ import os
 import shutil
 import numpy as np
 from mpi4py import MPI
+import gzip
 from .pyOFMesh import pyOFMesh
 try:
     from collections import OrderedDict
