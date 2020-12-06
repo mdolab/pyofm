@@ -5,7 +5,7 @@
 '''
 
     DAFoam  : Python interface for OpenFOAM mesh
-    Version : v1.1
+    Version : v1.2
 
     Description:
         Cython wrapper functions that call OpenFOAM libraries defined

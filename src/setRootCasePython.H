@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*\
 
     pyOFM  : Python interface for OpenFOAM mesh
-    Version : v1.1
+    Version : v1.2
 
 
     Description:
@@ -12,7 +12,7 @@
 
 \*---------------------------------------------------------------------------*/
 
-Foam::argList::addBoolOption("python","Use Python/Cython wrapping such that the UPstream function \
+Foam::argList::addBoolOption("python", "Use Python/Cython wrapping such that the UPstream function \
     in OpenFOAM will not initialize or finalize MPI, instead, mpi4py will do that.");
 
 Foam::argList args(argc, argv, true, true, false);
@@ -20,5 +20,3 @@ if (!args.checkRootCase())
 {
     Foam::FatalError.exit();
 }
-
-

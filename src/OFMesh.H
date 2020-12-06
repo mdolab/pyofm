@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*\
 
     pyOFM  : Python interface for OpenFOAM mesh
-    Version : v1.1
+    Version : v1.2
 
     Description:
         Functions to read OpenFOAM mesh information
@@ -26,7 +26,6 @@ class OFMesh
 {
 
 private:
-
     /// Disallow default bitwise copy construct
     OFMesh(const OFMesh&);
 
@@ -53,7 +52,6 @@ private:
     pointField pointField_;
 
 public:
-
     /// Constructors
     OFMesh(char* argsAll);
 
@@ -62,11 +60,9 @@ public:
 
     void readMesh();
 
-    double getMeshPointCoord
-    (
+    double getMeshPointCoord(
         const label pointI,
-        const label compI
-    ) const
+        const label compI) const
     {
 #if defined(CODI_AD_FORWARD) || defined(CODI_AD_REVERSE)
         return meshPtr_().points()[pointI][compI].getValue();
@@ -75,27 +71,23 @@ public:
 #endif
     }
 
-    void setMeshPointCoord
-    (
+    void setMeshPointCoord(
         const label pointI,
         const label compI,
-        const double value
-    )
+        const double value)
     {
-        pointField_[pointI][compI]=value;
+        pointField_[pointI][compI] = value;
     }
 
-    label getMeshFacePointIndex
-    (
+    label getMeshFacePointIndex(
         const label faceI,
-        const label pointI
-    ) const
+        const label pointI) const
     {
         const label& facePointSize = meshPtr_().faces()[faceI].size();
-        if (pointI > facePointSize-1) 
+        if (pointI > facePointSize - 1)
         {
-            FatalErrorIn("getMeshFacePointIndex")<<"Face "<<faceI<<" has "<< facePointSize << " points."
-                <<" while the require pointI is "<<pointI<<abort(FatalError);
+            FatalErrorIn("getMeshFacePointIndex") << "Face " << faceI << " has " << facePointSize << " points."
+                                                  << " while the require pointI is " << pointI << abort(FatalError);
         }
         return meshPtr_().faces()[faceI][pointI];
     }
@@ -170,19 +162,14 @@ public:
         return meshPtr_().neighbour()[faceI];
     }
 
-    label getLocalBoundaryFaceOwner
-    (
-        const label patchI, 
-        const label faceI
-    ) const
+    label getLocalBoundaryFaceOwner(
+        const label patchI,
+        const label faceI) const
     {
         const UList<label>& pFaceCells = meshPtr_().boundaryMesh()[patchI].faceCells();
         return pFaceCells[faceI];
     }
-
 };
-
-
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

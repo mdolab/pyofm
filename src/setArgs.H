@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*\
 
     pyOFM  : Python interface for OpenFOAM mesh
-    Version : v1.1
+    Version : v1.2
 
     Description:
         Set the arguments for wrapping OpenFOAM with Cython.
@@ -13,7 +13,7 @@
 // create argc and argv, given argsAll
 List<word> argvList;
 
-char * pch;
+char* pch;
 pch = strtok(argsAll_, " ");
 int argc = 0;
 while (pch != NULL)
@@ -23,7 +23,7 @@ while (pch != NULL)
     pch = strtok(NULL, " ");
 }
 
-char** argv = new char *[argc];
+char** argv = new char*[argc];
 for (int i = 0; i < argc; i++)
 {
     argv[i] = const_cast<char*>(argvList[i].c_str());
