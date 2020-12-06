@@ -21,6 +21,11 @@ libName="pyOFMesh"
 os.environ["CC"] = "mpicc" 
 os.environ["CXX"] = "mpicxx"
 
+if os.getenv("WM_CODI_AD_FLAGS") is None:
+    codiFlag = "-DCODI_AD_NONE"
+else:
+    codiFlag = os.getenv("WM_CODI_AD_FLAGS")
+
 # These setup should reproduce calling wmake to compile OpenFOAM libraries and solvers
 ext = [Extension("pyOFMesh",
     # All source files, taken from Make/files
@@ -37,7 +42,12 @@ ext = [Extension("pyOFMesh",
         os.getenv("FOAM_SRC")+"/OpenFOAM/lnInclude",
         os.getenv("FOAM_SRC")+"/OSspecific/POSIX/lnInclude",
         os.getenv("FOAM_LIBBIN"),
-        os.getenv("FOAM_USER_LIBBIN")],
+        os.getenv("FOAM_USER_LIBBIN"),
+        # CoDiPack and MeDiPack
+        os.getenv("FOAM_SRC") + "/codipack/include",
+        os.getenv("FOAM_SRC") + "/medipack/include",
+        os.getenv("FOAM_SRC") + "/medipack/src",
+        ],
     # These are from Make/options:EXE_LIBS
     libraries = [
         "meshTools",
@@ -65,7 +75,8 @@ ext = [Extension("pyOFMesh",
         "-DNoRepository",
         "-ftemplate-depth-100",
         "-fPIC",
-        "-c"],
+        "-c",
+        codiFlag,],
     # Extra link flags for OpenFOAM, users don't need to touch this 
     extra_link_args=[
         "-Xlinker",

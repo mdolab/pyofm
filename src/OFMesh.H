@@ -62,20 +62,24 @@ public:
 
     void readMesh();
 
-    scalar getMeshPointCoord
+    double getMeshPointCoord
     (
         const label pointI,
         const label compI
     ) const
     {
+#if defined(CODI_AD_FORWARD) || defined(CODI_AD_REVERSE)
+        return meshPtr_().points()[pointI][compI].getValue();
+#else
         return meshPtr_().points()[pointI][compI];
+#endif
     }
 
     void setMeshPointCoord
     (
         const label pointI,
         const label compI,
-        const scalar value
+        const double value
     )
     {
         pointField_[pointI][compI]=value;
