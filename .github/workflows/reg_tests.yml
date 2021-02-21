@@ -1,0 +1,28 @@
+name: pyOFM
+
+on: [push, pull_request]
+
+env:
+  REPO_NAME: 'pyofm'
+  DOCKER_WORKING_DIR: '/home/dafoamuser/$REPO_NAME'
+  DOCKER_MOUNT_DIR: '/home/dafoamuser/mount/$REPO_NAME'
+  DOCKER_TAG: 'latest'
+
+jobs:
+
+  regresstion_tests:
+    runs-on: ubuntu-18.04
+    name: Regression tests
+    steps:
+    - uses: actions/checkout@v2
+    - name: Create the docker container and run the tests
+      run: |
+        docker pull dafoam/opt-packages:${{env.DOCKER_TAG}}
+        docker run -i -d -u dafoamuser --name regtest -v $GITHUB_WORKSPACE:${{env.DOCKER_MOUNT_DIR}} dafoam/opt-packages:${{env.DOCKER_TAG}} /bin/bash
+        docker exec -i regtest /bin/bash -c "rm -rf ${{ env.DOCKER_WORKING_DIR}} && cp -r ${{env.DOCKER_MOUNT_DIR}} ${{env.DOCKER_WORKING_DIR}}"
+        docker exec -i regtest /bin/bash -c ". /home/dafoamuser/loadDAFoam.sh && cd ${{env.DOCKER_WORKING_DIR}} && make && pip install ."
+        docker exec -i regtest /bin/bash -c "cd ${{env.DOCKER_WORKING_DIR}}/reg_tests && rm -rf input.tar.gz && wget https://github.com/mdolab/pyofm/raw/master/reg_tests/input.tar.gz && tar -xzf input.tar.gz"
+        docker exec -i regtest /bin/bash -c "cd ${{env.DOCKER_WORKING_DIR}}/reg_tests && python run_reg_tests.py"
+        #docker exec regtest sed -i -e 's/real-opt/complex-opt/g' /home/dafoamuser/loadDAFoam.sh
+        #docker exec -i regtest /bin/bash -c ". /home/dafoamuser/loadDAFoam.sh && rm -rf /home/dafoamuser/packages/petsc-3.11.4/real-opt && cd /home/dafoamuser && git clone https://github.com/mdolab/idwarp && cd idwarp && make -f Makefile_CS && pip uninstall idwarp && pip install . && cd ${{env.DOCKER_WORKING_DIR}}/reg_tests && python run_reg_tests_cs.py"
+
