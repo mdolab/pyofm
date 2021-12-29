@@ -28,7 +28,7 @@ setup(name='pyofm',
       },
       install_requires=[
             'numpy>=1.16.4',
-            'mpi4py>=3.0.2',
+            'mpi4py>=3.0.0',
       ],
       classifiers=[
         "Operating System :: Linux",
