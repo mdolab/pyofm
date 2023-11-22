@@ -16,17 +16,6 @@ from mpi4py import MPI
 import gzip
 from .pyOFMesh import pyOFMesh
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    try:
-        from ordereddict import OrderedDict
-    except ImportError:
-        print(
-            "Could not find any OrderedDict class. For 2.6 and earlier, \
-use:\n pip install ordereddict"
-        )
-
 
 class Error(Exception):
     """
@@ -64,19 +53,20 @@ class PYOFM(object):
 
     def __init__(self, comm=None):
 
-        if comm == None:
+        if comm is None:
             self.comm = MPI.COMM_WORLD
         else:
             self.comm = comm
 
-        self.parRun = False
         parArg = ""
         if self.comm.size > 1:
             parArg = " -parallel"
 
         solverName = "pyOFMesh -python" + parArg
 
-        self.ofMesh = pyOFMesh(solverName.encode())
+        solverNameEncoded = solverName.encode()
+
+        self.ofMesh = pyOFMesh(solverNameEncoded)
 
         self.ofMesh.readMesh()
 
@@ -274,12 +264,12 @@ class PYOFM(object):
         fileOrigDir = self.fileNames["pointsFile0Dir"]
         try:
             shutil.move(fileOrig, fileNew)
-        except:
+        except Exception:
             raise Error("Can not move %s to %s" % (fileOrig, fileNew))
 
         try:
             shutil.rmtree(fileOrigDir)
-        except:
+        except Exception:
             raise Error("Can not remove %s" % (fileOrigDir))
 
         self.comm.Barrier()
@@ -294,7 +284,7 @@ class PYOFM(object):
                 print("Checking if we need to compress the mesh files")
                 meshFileDir = "constant/polyMesh"
                 for file1 in os.listdir(meshFileDir):
-                    if (not ".gz" in file1) and (not file1 == "boundary"):
+                    if (".gz" not in file1) and (file1 != "boundary"):
                         compFileName = os.path.join(meshFileDir, file1)
                         if os.path.isfile(compFileName):
                             with open(compFileName, "rb") as f_in, gzip.open(compFileName + ".gz", "wb") as f_out:
