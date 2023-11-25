@@ -44,7 +44,7 @@ if mode == 'train':
                   mpiexec, module_name))
 
     # Run each script
-    os.system('%s -np 4 python solve_script.py >> %s_par_reg.ref 2>&1'%(
+    os.system('%s --oversubscribe -np 4 python solve_script.py >> %s_par_reg.ref 2>&1'%(
                   mpiexec, module_name))
 
             
@@ -62,7 +62,7 @@ else:
                 mpiexec, module_name))
 
     # Run each script
-    os.system('%s -np 4 python solve_script.py  >> %s_par_reg 2>&1'%(
+    os.system('%s --oversubscribe -np 4 python solve_script.py  >> %s_par_reg 2>&1'%(
                 mpiexec, module_name))
 
     # Do the comparison (reference file must be first)
