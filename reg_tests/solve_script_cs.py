@@ -58,7 +58,7 @@ def test1():
 
     meshOptions.update(
         {'gridFile':file_name,
-         'fileType':'openfoam',
+         'fileType':'OpenFOAM',
          'symmetryPlanes':[[[0,0,0], [0,1,0]]],
      }
     )
