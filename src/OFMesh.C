@@ -15,7 +15,8 @@ namespace Foam
 OFMesh::OFMesh(
     char* argsAll)
     : meshPtr_(nullptr),
-      runTimePtr_(nullptr)
+      runTimePtr_(nullptr),
+      argsPtr_(nullptr)
 {
     argsAll_ = argsAll;
 }

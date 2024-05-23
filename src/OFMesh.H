@@ -35,6 +35,8 @@ private:
     /// all the arguments
     char* argsAll_;
 
+    autoPtr<argList> argsPtr_;
+
     autoPtr<fvMesh> meshPtr_;
 
     autoPtr<Time> runTimePtr_;

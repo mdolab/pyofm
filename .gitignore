@@ -1,3 +1,9 @@
 
 ._*
 .DS_Store
+.vscode
+build
+pyofm.egg-info
+__pycache__
+*.so
+pyOFMesh.cpp

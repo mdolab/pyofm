@@ -15,7 +15,9 @@
 Foam::argList::addBoolOption("python", "Use Python/Cython wrapping such that the UPstream function \
     in OpenFOAM will not initialize or finalize MPI, instead, mpi4py will do that.");
 
-Foam::argList args(argc, argv, true, true, false);
+argsPtr_.reset(new Foam::argList(argc, argv, true, true, false));
+
+Foam::argList &args = argsPtr_();
 if (!args.checkRootCase())
 {
     Foam::FatalError.exit();
