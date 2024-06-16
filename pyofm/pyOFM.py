@@ -306,3 +306,17 @@ class PYOFM(object):
                 if "on" in cols[1]:
                     writecompress = True
         return writecompress
+
+    def readField(self, fieldName, fieldType, timeName, field):
+        """
+        Read OpenFoam field and return the internal field as an array
+
+        Inputs:
+            fieldName: name of the field to read
+            fieldType: can be either volScalarField or volVectorField
+            timeName: the time folder name to read, e.g., "0" or "1000"
+        Output:
+            field: an np array to save the field
+        """
+
+        self.ofMesh.readField(fieldName, fieldType, timeName, field)

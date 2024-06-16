@@ -15,6 +15,7 @@ from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Build import cythonize
 import os
+import numpy
 
 libName = "pyOFMesh"
 
@@ -47,6 +48,7 @@ ext = [
             os.getenv("FOAM_SRC") + "/codipack/include",
             os.getenv("FOAM_SRC") + "/medipack/include",
             os.getenv("FOAM_SRC") + "/medipack/src",
+            numpy.get_include(),
         ],
         # These are from Make/options:EXE_LIBS
         libraries=["meshTools", "finiteVolume"],
@@ -56,6 +58,7 @@ ext = [
         extra_compile_args=[
             # "-DFULLDEBUG -g -O0", # this is for debugging
             "-std=c++11",
+            "-Wno-deprecated-copy",
             "-m64",
             "-DOPENFOAM_PLUS=1812",
             "-Dlinux64",

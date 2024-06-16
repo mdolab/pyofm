@@ -14,7 +14,7 @@
 
 '''
 
-import numpy as np
+cimport numpy as np
 
 from libcpp.string cimport string
 
@@ -41,6 +41,7 @@ cdef extern from "OFMesh.H" namespace "Foam":
         int getLocalFaceOwner(int)
         int getLocalBoundaryFaceOwner(int,int)
         int getLocalFaceNeighbour(int)
+        void readField(char* , char *, char *, double *)
 
 # create python wrappers that call cpp functions
 cdef class pyOFMesh:
@@ -133,3 +134,15 @@ cdef class pyOFMesh:
     
     def getLocalFaceNeighbour(self, faceI):
         return self._thisptr.getLocalFaceNeighbour(faceI)
+    
+    def readField(self, fieldName, fieldType, timeName, np.ndarray[double, ndim=1, mode="c"] field):
+        if fieldType == "volScalarField":
+            assert len(field) == self.getNLocalCells(), "invalid array size!"
+        elif fieldType == "volVectorField":
+            assert len(field) == self.getNLocalCells() * 3, "invalid array size!"
+        else:
+            print("fieldType invalid!")
+            exit(1)
+        
+        cdef double *field_data = <double*>field.data
+        self._thisptr.readField(fieldName.encode(), fieldType.encode(), timeName.encode(), field_data)
