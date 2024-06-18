@@ -223,6 +223,65 @@ public:
                                       << " not supported! Options are volScalariField or volVectorField" << abort(FatalError);
         }
     }
+
+    void writeField(
+        const word fieldName,
+        const word fieldType,
+        const double* field)
+    {
+        if (fieldType == "volScalarField")
+        {
+            volScalarField state(
+                IOobject(
+                    fieldName,
+                    "0",
+                    meshPtr_(),
+                    IOobject::NO_READ,
+                    IOobject::NO_WRITE,
+                    false),
+                meshPtr_(),
+                dimensionedScalar(fieldName, dimensionSet(0, 0, 0, 0, 0, 0, 0), 0.0),
+                "zeroGradient");
+
+            forAll(state, cellI)
+            {
+                state[cellI] = field[cellI];
+            }
+            state.correctBoundaryConditions();
+            state.write();
+        }
+        else if (fieldType == "volVectorField")
+        {
+            volVectorField state(
+                IOobject(
+                    fieldName,
+                    "0",
+                    meshPtr_(),
+                    IOobject::NO_READ,
+                    IOobject::NO_WRITE,
+                    false),
+                meshPtr_(),
+                dimensionedVector(fieldName, dimensionSet(0, 0, 0, 0, 0, 0, 0), vector::zero),
+                "zeroGradient");
+
+            label counterI = 0;
+            forAll(state, cellI)
+            {
+                for (label i = 0; i < 3; i++)
+                {
+                    state[cellI][i] = field[counterI];
+                    counterI++;
+                }
+            }
+            state.correctBoundaryConditions();
+            state.write();
+        }
+        else
+        {
+            FatalErrorIn("readField") << "fieldType " << fieldType
+                                      << " not supported! Options are volScalariField or volVectorField" << abort(FatalError);
+        }
+    }
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -320,3 +320,18 @@ class PYOFM(object):
         """
 
         self.ofMesh.readField(fieldName, fieldType, timeName, field)
+    
+    def writeField(self, fieldName, fieldType, field):
+        """
+        Write OpenFoam field based on the internal field values from an array
+
+        Inputs:
+            fieldName: name of the field to read
+            fieldType: can be either volScalarField or volVectorField
+            field: an np array to save values of the field
+        Output:
+            An OpenFOAM field variable written to the disk (usually in the 0 folder)
+            
+        """
+
+        self.ofMesh.writeField(fieldName, fieldType, field)

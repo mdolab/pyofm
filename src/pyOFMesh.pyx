@@ -42,6 +42,7 @@ cdef extern from "OFMesh.H" namespace "Foam":
         int getLocalBoundaryFaceOwner(int,int)
         int getLocalFaceNeighbour(int)
         void readField(char* , char *, char *, double *)
+        void writeField(char* , char *, double *)
 
 # create python wrappers that call cpp functions
 cdef class pyOFMesh:
@@ -146,3 +147,15 @@ cdef class pyOFMesh:
         
         cdef double *field_data = <double*>field.data
         self._thisptr.readField(fieldName.encode(), fieldType.encode(), timeName.encode(), field_data)
+    
+    def writeField(self, fieldName, fieldType, np.ndarray[double, ndim=1, mode="c"] field):
+        if fieldType == "volScalarField":
+            assert len(field) == self.getNLocalCells(), "invalid array size!"
+        elif fieldType == "volVectorField":
+            assert len(field) == self.getNLocalCells() * 3, "invalid array size!"
+        else:
+            print("fieldType invalid!")
+            exit(1)
+        
+        cdef double *field_data = <double*>field.data
+        self._thisptr.writeField(fieldName.encode(), fieldType.encode(), field_data)
