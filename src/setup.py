@@ -52,7 +52,8 @@ ext = [
             "-m64",
             "-pthread",
             "-DOPENFOAM=2112",
-            "-DDAOF_AD_TOOL_DCO_FOAM",
+            "-DDAOF_AD_TOOL_CODI"
+            "-DDAOF_AD_MODE_A1S",
             #"-Dlinux64",
             #"-DWM_ARCH_OPTION=64",
             "-DWM_DP",

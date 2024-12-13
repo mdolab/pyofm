@@ -66,7 +66,7 @@ public:
         const label pointI,
         const label compI) const
     {
-#if defined(CODI_AD_FORWARD) || defined(CODI_AD_REVERSE)
+#if defined(DAOF_AD_MODE_T1S) || defined(DAOF_AD_MODE_A1S)
         return meshPtr_().points()[pointI][compI].getValue();
 #else
         return meshPtr_().points()[pointI][compI];
@@ -192,7 +192,11 @@ public:
 
             forAll(state, cellI)
             {
+#if defined(DAOF_AD_MODE_T1S) || defined(DAOF_AD_MODE_A1S)
+                field[cellI] = state[cellI].getValue();
+#else
                 field[cellI] = state[cellI];
+#endif
             }
         }
         else if (fieldType == "volVectorField")
@@ -212,7 +216,11 @@ public:
             {
                 for (label i = 0; i < 3; i++)
                 {
-                    field[counterI] = state[cellI][i];
+#if defined(DAOF_AD_MODE_T1S) || defined(DAOF_AD_MODE_A1S)
+                field[counterI] = state[cellI][i].getValue();
+#else
+                field[counterI] = state[cellI][i];
+#endif
                     counterI++;
                 }
             }
