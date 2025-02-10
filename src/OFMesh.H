@@ -66,7 +66,7 @@ public:
         const label pointI,
         const label compI) const
     {
-#if defined(DAOF_AD_MODE_T1S) || defined(DAOF_AD_MODE_A1S)
+#if defined(CODI_ADR) || defined(CODI_ADF)
         return meshPtr_().points()[pointI][compI].getValue();
 #else
         return meshPtr_().points()[pointI][compI];
@@ -192,7 +192,7 @@ public:
 
             forAll(state, cellI)
             {
-#if defined(DAOF_AD_MODE_T1S) || defined(DAOF_AD_MODE_A1S)
+#if defined(CODI_ADR) || defined(CODI_ADF)
                 field[cellI] = state[cellI].getValue();
 #else
                 field[cellI] = state[cellI];
@@ -216,7 +216,7 @@ public:
             {
                 for (label i = 0; i < 3; i++)
                 {
-#if defined(DAOF_AD_MODE_T1S) || defined(DAOF_AD_MODE_A1S)
+#if defined(CODI_ADR) || defined(CODI_ADF)
                 field[counterI] = state[cellI][i].getValue();
 #else
                 field[counterI] = state[cellI][i];
