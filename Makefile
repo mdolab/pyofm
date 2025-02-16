@@ -1,7 +1,6 @@
 default:
-	(cd src && python setup.py build_ext --inplace)
-	(mv src/*.so pyofm)
+	(cd src && ./Allmake && cd -)
 
 clean:
-	(cd src && rm -rf *.cpp *.so build)
+	(cd src && ./Allclean && cd -)
 	(rm -rf */__pycache__ */*/__pycache__)

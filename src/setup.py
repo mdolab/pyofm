@@ -22,11 +22,6 @@ libName = "pyOFMesh"
 os.environ["CC"] = "mpicc"
 os.environ["CXX"] = "mpicxx"
 
-if os.getenv("WM_CODI_AD_FLAGS") is None:
-    codiFlag = "-DCODI_AD_NONE"
-else:
-    codiFlag = os.getenv("WM_CODI_AD_FLAGS")
-
 # These setup should reproduce calling wmake to compile OpenFOAM libraries and solvers
 ext = [
     Extension(
@@ -44,10 +39,6 @@ ext = [
             os.getenv("FOAM_SRC") + "/OSspecific/POSIX/lnInclude",
             os.getenv("FOAM_LIBBIN"),
             os.getenv("FOAM_USER_LIBBIN"),
-            # CoDiPack and MeDiPack
-            os.getenv("FOAM_SRC") + "/codipack/include",
-            os.getenv("FOAM_SRC") + "/medipack/include",
-            os.getenv("FOAM_SRC") + "/medipack/src",
             numpy.get_include(),
         ],
         # These are from Make/options:EXE_LIBS
@@ -57,16 +48,19 @@ ext = [
         # All other flags for OpenFOAM, users don't need to touch this
         extra_compile_args=[
             # "-DFULLDEBUG -g -O0", # this is for debugging
-            "-std=c++11",
-            "-Wno-deprecated-copy",
+            "-std=c++17",
             "-m64",
-            "-DOPENFOAM_PLUS=1812",
-            "-Dlinux64",
-            "-DWM_ARCH_OPTION=64",
+            "-pthread",
+            "-DOPENFOAM=2112",
+            "-DDAOF_AD_TOOL_CODI"
+            "-DDAOF_AD_MODE_A1S",
+            #"-Dlinux64",
+            #"-DWM_ARCH_OPTION=64",
             "-DWM_DP",
             "-DWM_LABEL_SIZE=32",
             "-Wall",
             "-Wextra",
+            "-Wno-deprecated-copy",
             "-Wnon-virtual-dtor",
             "-Wno-unused-parameter",
             "-Wno-invalid-offsetof",
@@ -75,10 +69,9 @@ ext = [
             "-ftemplate-depth-100",
             "-fPIC",
             "-c",
-            codiFlag,
         ],
         # Extra link flags for OpenFOAM, users don't need to touch this
-        extra_link_args=["-Xlinker", "--add-needed", "-Xlinker", "--no-as-needed"],
+        extra_link_args=["-shared", "-Xlinker", "--add-needed", "-Xlinker", "--no-as-needed"],
     )
 ]
 
