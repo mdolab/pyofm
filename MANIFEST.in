@@ -1,0 +1,33 @@
+# Include the license
+include LICENSE.md
+
+# Include documentation
+include README.md
+
+# Include all source files needed for Cython compilation
+recursive-include src *.C
+recursive-include src *.H
+recursive-include src *.pyx
+recursive-include src *.pxd
+include src/Allmake
+include src/Allclean
+include src/setup.py
+
+# Include OpenFOAM Make files
+recursive-include src/Make *
+
+# Include any header files in lnInclude
+recursive-include src/lnInclude *.H
+
+# Include Python package data
+recursive-include pyofm *.py
+recursive-include pyofm *.so
+
+# Exclude compiled objects and cache
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *__pycache__*
+global-exclude *.so
+global-exclude *.o
+global-exclude .git*
+global-exclude *.tmp

@@ -14,7 +14,12 @@ import shutil
 import numpy as np
 from mpi4py import MPI
 import gzip
-from .pyOFMesh import pyOFMesh
+try:
+    from .pyOFMesh import pyOFMesh
+    CYTHON_AVAILABLE = True
+except ImportError:
+    pyOFMesh = None
+    CYTHON_AVAILABLE = False
 
 
 class Error(Exception):
@@ -52,6 +57,13 @@ class PYOFM(object):
     """
 
     def __init__(self, comm=None):
+        
+        if not CYTHON_AVAILABLE:
+            raise Error("pyOFMesh Cython extension not available. "
+                       "This package was built without OpenFOAM support. "
+                       "To enable OpenFOAM mesh reading, install with: "
+                       "1) Load OpenFOAM environment: source /path/to/openfoam/etc/bashrc "
+                       "2) Install: pip install --no-binary pyofm pyofm")
 
         if comm is None:
             self.comm = MPI.COMM_WORLD
